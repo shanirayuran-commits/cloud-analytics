@@ -54,11 +54,6 @@ The application is built for users who require a minimalist yet powerful interfa
   <img src="https://skillicons.dev/icons?i=react,tailwind,js,html,css" />
 </p>
 
-### Tools & Deployment
-<p align="left">
-  <img src="https://skillicons.dev/icons?i=github,vscode,vercel,figma" />
-</p>
-
 ---
 
 ## Keyboard Shortcuts
@@ -80,28 +75,78 @@ The application is built for users who require a minimalist yet powerful interfa
 ```bash
 npm install
 
+```
+
+### 2. Run the dev server
+```bash
+npm run dev
+
+```
+
+## Screenshots
+
+<details>
+  <summary><strong>Click to expand screenshot gallery</strong></summary>
+
+  <br>
+
+  <p align="center">
+    <img src="ss/dashboard.png" width="850"/>
+  </p>
+  <p align="center"><i>Main dashboard interface</i></p>
+
+  <p align="center">
+    <img src="ss/aianalysis.png" width="850"/>
+  </p>
+  <p align="center"><i>AI-powered predictive analysis</i></p>
+
+  <p align="center">
+    <img src="ss/compare.png" width="850"/>
+  </p>
+  <p align="center"><i>Data comparison and growth metrics</i></p>
+
+  <p align="center">
+    <img src="ss/analytics.png" width="850"/>
+  </p>
+  <p align="center"><i>Comparative campaign analytics</i></p>
+
+  <p align="center">
+    <img src="ss/trends.png" width="850"/>
+  </p>
+  <p align="center"><i>Detailed trend analysis over time</i></p>
+
+  <p align="center">
+    <img src="ss/distribution.png" width="850"/>
+  </p>
+  <p align="center"><i>Metric distribution breakdown</i></p>
+
+  <p align="center">
+    <img src="ss/performance.png" width="850"/>
+  </p>
+  <p align="center"><i>Real-time system performance metrics</i></p>
+
+  <p align="center">
+    <img src="ss/reports.png" width="850"/>
+  </p>
+  <p align="center"><i>Data source and report generation panel</i></p>
+
+  <p align="center">
+    <img src="ss/keybindings.png" width="850"/>
+  </p>
+  <p align="center"><i>Integrated keyboard shortcut overlay</i></p>
+
+</details>
+
 ---
-
-
 
 ## License
 
-
-
 This project is licensed under the MIT License.
-
-
 
 ---
 
-
-
 <p align="center">
-
-  AuthPoint Web Application
-
+  Cloud Analytics Web Application
 </p>
-
-
 
 ---
