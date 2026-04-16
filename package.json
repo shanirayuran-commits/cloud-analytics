@@ -1,0 +1,27 @@
+{
+  "name": "cloud-analytics-dashboard",
+  "version": "1.0.0",
+  "description": "A real-time analytics dashboard with interactive charts and live data streaming",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": [
+    "electron",
+    "analytics",
+    "dashboard",
+    "charts",
+    "websocket"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^26.6.10"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.1",
+    "ws": "^8.16.0",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Analytics Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Chart.js Zoom Plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+</head>
+<body>
+  <!-- ============================================================
+       MAIN APPLICATION LAYOUT
+       ============================================================ -->
+  
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo gradient-text">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Analytics</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-section="ai-analysis">
+          <i data-lucide="brain-circuit"></i>
+          <span>AI Analysis</span>
+        </a>
+        <a href="#" class="nav-item" data-section="comparison">
+          <i data-lucide="git-compare"></i>
+          <span>Comparison</span>
+        </a>
+        <a href="#" class="nav-item" data-section="line-chart">
+          <i data-lucide="trending-up"></i>
+          <span>Trends</span>
+        </a>
+        <a href="#" class="nav-item" data-section="bar-chart">
+          <i data-lucide="bar-chart-2"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="#" class="nav-item" data-section="pie-chart">
+          <i data-lucide="pie-chart"></i>
+          <span>Distribution</span>
+        </a>
+        <a href="#" class="nav-item" data-section="performance">
+          <i data-lucide="activity"></i>
+          <span>Performance</span>
+        </a>
+        <a href="#" class="nav-item" data-section="reports">
+          <i data-lucide="file-bar-chart"></i>
+          <span>Reports</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+          <i data-lucide="moon" id="themeIcon"></i>
+        </button>
+        <div class="connection-status">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="statusText">Connecting...</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Window Controls (macOS-style) -->
+      <div class="window-controls">
+        <button class="window-control minimize" id="windowMinimize" title="Minimize">
+          <span></span>
+        </button>
+        <button class="window-control maximize" id="windowMaximize" title="Maximize">
+          <span></span>
+        </button>
+        <button class="window-control close" id="windowClose" title="Close">
+          <span></span>
+        </button>
+      </div>
+      
+      <!-- Header with Filters and Export Options -->
+      <header class="content-header">
+        <div class="header-left">
+          <h1 id="sectionTitle" class="gradient-text">Dashboard</h1>
+          <div class="header-actions">
+            <button class="icon-btn" id="refreshBtn" title="Refresh Data (R)">
+              <i data-lucide="refresh-cw"></i>
+            </button>
+            <button class="icon-btn" id="fullscreenBtn" title="Fullscreen (F)">
+              <i data-lucide="maximize"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="header-controls">
+          <!-- Date Filter -->
+          <div class="filter-group">
+            <label for="dateFilter">Date</label>
+            <select id="dateFilter">
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month" selected>This Month</option>
+              <option value="quarter">This Quarter</option>
+              <option value="year">This Year</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          
+          <!-- Custom Date Range (hidden by default) -->
+          <div class="filter-group date-range-group" id="dateRangeGroup" style="display: none;">
+            <input type="date" id="startDate" class="date-input">
+            <span>to</span>
+            <input type="date" id="endDate" class="date-input">
+          </div>
+          
+          <!-- Category Filter -->
+          <div class="filter-group">
+            <label for="categoryFilter">Category</label>
+            <select id="categoryFilter">
+              <option value="all">All</option>
+              <option value="sales">Sales</option>
+              <option value="traffic">Traffic</option>
+              <option value="users">Users</option>
+              <option value="revenue">Revenue</option>
+            </select>
+          </div>
+          
+          <!-- Source Filter -->
+          <div class="filter-group">
+            <label for="sourceFilter">Source</label>
+            <select id="sourceFilter">
+              <option value="all">All</option>
+              <option value="web">Web</option>
+              <option value="mobile">Mobile</option>
+              <option value="api">API</option>
+            </select>
+          </div>
+          
+          <!-- Export Buttons -->
+          <div class="export-group">
+            <button id="exportPng" class="btn btn-icon" title="Export PNG">
+              <i data-lucide="image"></i>
+            </button>
+            <button id="exportCsv" class="btn btn-icon" title="Export CSV">
+              <i data-lucide="file-spreadsheet"></i>
+            </button>
+            <button id="exportPdf" class="btn btn-icon" title="Export PDF">
+              <i data-lucide="file-text"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Notifications Panel -->
+      <div class="notifications-panel" id="notificationsPanel">
+        <div class="notifications-header">
+          <h3>Notifications</h3>
+          <button class="close-btn" id="closeNotifications">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="notifications-list" id="notificationsList">
+          <div class="notification-item">
+            <i data-lucide="bell"></i>
+            <span>Welcome to Analytics Dashboard</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="content-section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon views">
+              <i data-lucide="eye"></i>
+            </div>
+            <div class="stat-content">
+              <h3>Total Views</h3>
+              <p class="stat-value" id="totalViews">0</p>
+              <p class="stat-change positive">+12.5%</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon users">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="stat-content">
+              <h3>Active Users</h3>
+              <p class="stat-value" id="activeUsers">0</p>
+              <p class="stat-change positive">+8.3%</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon revenue">
+              <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+              <h3>Revenue</h3>
+              <p class="stat-value" id="revenue">$0</p>
+              <p class="stat-change negative">-2.1%</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon conversion">
+              <i data-lucide="percent"></i>
+            </div>
+            <div class="stat-content">
+              <h3>Conversion Rate</h3>
+              <p class="stat-value" id="conversionRate">0%</p>
+              <p class="stat-change positive">+5.7%</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="charts-container">
+          <div class="chart-wrapper">
+            <div class="chart-header">
+              <h3>Views & Sales Over Time</h3>
+              <div class="chart-actions">
+                <button class="chart-action-btn" id="resetZoom" title="Reset Zoom">
+                  <i data-lucide="zoom-out"></i>
+                </button>
+              </div>
+            </div>
+            <canvas id="lineChart"></canvas>
+          </div>
+          <div class="chart-wrapper">
+            <h3>Category Distribution</h3>
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Analysis Section -->
+      <section id="ai-analysis" class="content-section">
+        <div class="ai-header">
+          <div class="ai-title">
+            <i data-lucide="sparkles"></i>
+            <h2>AI-Powered Analysis</h2>
+          </div>
+          <button class="btn btn-primary" id="runAIAnalysis">
+            <i data-lucide="play"></i>
+            Run Analysis
+          </button>
+        </div>
+        
+        <div class="ai-grid">
+          <!-- Predictions Chart -->
+          <div class="ai-card">
+            <div class="ai-card-header">
+              <i data-lucide="trending-up"></i>
+              <h3>Predictions</h3>
+            </div>
+            <div class="ai-card-content">
+              <canvas id="predictionChart"></canvas>
+              <div id="predictionContent"></div>
+            </div>
+          </div>
+          
+          <!-- Trend Analysis Chart -->
+          <div class="ai-card">
+            <div class="ai-card-header">
+              <i data-lucide="line-chart"></i>
+              <h3>Trend Analysis</h3>
+            </div>
+            <div class="ai-card-content">
+              <canvas id="trendChart"></canvas>
+              <div id="trendContent"></div>
+            </div>
+          </div>
+          
+          <!-- Distribution Chart -->
+          <div class="ai-card">
+            <div class="ai-card-header">
+              <i data-lucide="pie-chart"></i>
+              <h3>Data Distribution</h3>
+            </div>
+            <div class="ai-card-content">
+              <canvas id="distributionChart"></canvas>
+              <div id="distributionContent"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Additional Insights Section -->
+        <div class="ai-insights-grid">
+          <div class="ai-card full-width">
+            <div class="ai-card-header">
+              <i data-lucide="lightbulb"></i>
+              <h3>Smart Insights</h3>
+            </div>
+            <div class="ai-card-content" id="insightsContent">
+              <p class="ai-placeholder">Analysis in progress...</p>
+            </div>
+          </div>
+          
+          <div class="ai-card full-width">
+            <div class="ai-card-header">
+              <i data-lucide="target"></i>
+              <h3>Recommendations</h3>
+            </div>
+            <div class="ai-card-content" id="recommendationsContent">
+              <p class="ai-placeholder">Analysis in progress...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Comparison Section -->
+      <section id="comparison" class="content-section">
+        <div class="comparison-header">
+          <h2>Data Comparison</h2>
+          <div class="comparison-controls">
+            <div class="comparison-period">
+              <label>Period 1:</label>
+              <select id="period1">
+                <option value="current">Current Period</option>
+                <option value="previous">Previous Period</option>
+                <option value="lastYear">Last Year</option>
+              </select>
+            </div>
+            <div class="comparison-period">
+              <label>Period 2:</label>
+              <select id="period2">
+                <option value="previous">Previous Period</option>
+                <option value="current">Current Period</option>
+                <option value="lastYear">Last Year</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="compareBtn">
+              <i data-lucide="git-compare"></i>
+              Compare
+            </button>
+          </div>
+        </div>
+        
+        <div class="comparison-results" id="comparisonResults">
+          <div class="comparison-placeholder">
+            <i data-lucide="git-compare"></i>
+            <p>Select periods and click Compare to see differences</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Performance Section -->
+      <section id="performance" class="content-section">
+        <h2>Performance Metrics</h2>
+        <div class="performance-grid">
+          <div class="performance-card">
+            <div class="perf-icon">
+              <i data-lucide="zap"></i>
+            </div>
+            <div class="perf-content">
+              <h3>Data Latency</h3>
+              <p class="perf-value" id="dataLatency">0ms</p>
+            </div>
+          </div>
+          <div class="performance-card">
+            <div class="perf-icon">
+              <i data-lucide="database"></i>
+            </div>
+            <div class="perf-content">
+              <h3>Data Points</h3>
+              <p class="perf-value" id="dataPoints">0</p>
+            </div>
+          </div>
+          <div class="performance-card">
+            <div class="perf-icon">
+              <i data-lucide="clock"></i>
+            </div>
+            <div class="perf-content">
+              <h3>Last Update</h3>
+              <p class="perf-value" id="lastUpdate">--</p>
+            </div>
+          </div>
+          <div class="performance-card">
+            <div class="perf-icon">
+              <i data-lucide="wifi"></i>
+            </div>
+            <div class="perf-content">
+              <h3>Connection Quality</h3>
+              <p class="perf-value" id="connectionQuality">Excellent</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="performance-chart">
+          <canvas id="performanceChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Reports Section -->
+      <section id="reports" class="content-section">
+        <div class="reports-header">
+          <h2>Data Source & Reports</h2>
+        </div>
+        
+        <!-- Data Source Upload -->
+        <div class="data-source-section">
+          <div class="data-source-card">
+            <div class="data-source-header">
+              <i data-lucide="upload-cloud"></i>
+              <h3>Upload Data Source</h3>
+            </div>
+            <p class="data-source-description">Upload CSV or Excel files, fetch from URL, or connect to a database. Supported formats: .csv, .xlsx, .xls</p>
+            
+            <!-- Upload Tabs -->
+            <div class="upload-tabs">
+              <button class="upload-tab active" data-tab="file">File Upload</button>
+              <button class="upload-tab" data-tab="url">URL Upload</button>
+              <button class="upload-tab" data-tab="database">Database</button>
+            </div>
+            
+            <!-- File Upload Tab -->
+            <div class="upload-tab-content active" id="tab-file">
+              <div class="upload-area">
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display: none;">
+                <button class="btn btn-primary" id="uploadBtn">
+                  <i data-lucide="file-up"></i>
+                  Choose File
+                </button>
+                <span id="fileName" class="file-name">No file selected</span>
+                <button class="btn btn-secondary" id="fetchFileBtn" style="display: none;">
+                  <i data-lucide="upload"></i>
+                  Load Data
+                </button>
+              </div>
+            </div>
+            
+            <!-- URL Upload Tab -->
+            <div class="upload-tab-content" id="tab-url">
+              <div class="url-upload-area">
+                <input type="text" id="urlInput" class="url-input" placeholder="Enter data URL (CSV/JSON)">
+                <button class="btn btn-primary" id="fetchUrlBtn">
+                  <i data-lucide="download"></i>
+                  Fetch Data
+                </button>
+              </div>
+              <div class="upload-info">
+                <p><strong>Tip:</strong> Enter a direct link to a CSV or JSON file. The file must be publicly accessible.</p>
+              </div>
+            </div>
+            
+            <!-- Database Tab -->
+            <div class="upload-tab-content" id="tab-database">
+              <div class="database-config">
+                <div class="form-group">
+                  <label>Database Type</label>
+                  <select id="dbType">
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="sqlite">SQLite</option>
+                    <option value="mongodb">MongoDB</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Host</label>
+                  <input type="text" id="dbHost" placeholder="localhost">
+                </div>
+                <div class="form-group">
+                  <label>Port</label>
+                  <input type="text" id="dbPort" placeholder="3306">
+                </div>
+                <div class="form-group">
+                  <label>Database Name</label>
+                  <input type="text" id="dbName" placeholder="analytics_db">
+                </div>
+                <div class="form-group">
+                  <label>Username</label>
+                  <input type="text" id="dbUser" placeholder="root">
+                </div>
+                <div class="form-group">
+                  <label>Password</label>
+                  <input type="password" id="dbPassword" placeholder="••••••••">
+                </div>
+                <button class="btn btn-primary" id="connectDbBtn">
+                  <i data-lucide="link"></i>
+                  Connect Database
+                </button>
+              </div>
+              <div class="upload-info">
+                <p><strong>Note:</strong> Database connection requires additional backend configuration. Contact administrator for setup.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="reports-grid">
+          <div class="report-card">
+            <div class="report-icon">
+              <i data-lucide="file-bar-chart"></i>
+            </div>
+            <h3>Summary Report</h3>
+            <p>Generate a comprehensive summary of all metrics</p>
+            <button class="btn btn-secondary" data-report="summary">Generate</button>
+          </div>
+          
+          <div class="report-card">
+            <div class="report-icon">
+              <i data-lucide="trending-up"></i>
+            </div>
+            <h3>Trend Report</h3>
+            <p>Analyze trends and patterns over time</p>
+            <button class="btn btn-secondary" data-report="trend">Generate</button>
+          </div>
+          
+          <div class="report-card">
+            <div class="report-icon">
+              <i data-lucide="users"></i>
+            </div>
+            <h3>User Behavior Report</h3>
+            <p>Deep dive into user engagement metrics</p>
+            <button class="btn btn-secondary" data-report="user">Generate</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Line Chart Section -->
+      <section id="line-chart" class="content-section">
+        <div class="chart-wrapper full-width">
+          <div class="chart-header">
+            <h3>Trends Over Time</h3>
+            <div class="chart-actions">
+              <button class="chart-action-btn" id="lineResetZoom" title="Reset Zoom">
+                <i data-lucide="zoom-out"></i>
+              </button>
+            </div>
+          </div>
+          <canvas id="mainLineChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Bar Chart Section -->
+      <section id="bar-chart" class="content-section">
+        <div class="chart-wrapper full-width">
+          <div class="chart-header">
+            <h3>Comparative Analysis</h3>
+            <div class="chart-actions">
+              <button class="chart-action-btn" id="barResetZoom" title="Reset Zoom">
+                <i data-lucide="zoom-out"></i>
+              </button>
+            </div>
+          </div>
+          <canvas id="mainBarChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Pie Chart Section -->
+      <section id="pie-chart" class="content-section">
+        <div class="chart-wrapper full-width">
+          <h3>Distribution Breakdown</h3>
+          <canvas id="mainPieChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Keyboard Shortcuts Modal -->
+      <div class="modal" id="shortcutsModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Keyboard Shortcuts</h3>
+            <button class="close-btn" id="closeShortcuts">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="shortcuts-list">
+            <div class="shortcut-item">
+              <kbd>R</kbd>
+              <span>Refresh Data</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>F</kbd>
+              <span>Toggle Fullscreen</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>T</kbd>
+              <span>Toggle Theme</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>N</kbd>
+              <span>Toggle Notifications</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>?</kbd>
+              <span>Show Shortcuts</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>1-8</kbd>
+              <span>Switch Sections</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Esc</kbd>
+              <span>Close Modals</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help Button -->
+      <button class="help-btn" id="helpBtn" title="Keyboard Shortcuts (?)">
+        <i data-lucide="keyboard"></i>
+      </button>
+
+      <!-- Notification Bell -->
+      <button class="notification-bell" id="notificationBell" title="Notifications (N)">
+        <i data-lucide="bell"></i>
+        <span class="notification-badge" id="notificationBadge">0</span>
+      </button>
+    </main>
+  </div>
+
+  <!-- Load renderer script -->
+  <script src="renderer.js"></script>
+</body>
+</html>
